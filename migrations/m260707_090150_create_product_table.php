@@ -16,7 +16,7 @@ class m260707_090150_create_product_table extends Migration
             'id' => $this->primaryKey(),
             'title' => $this->string(150)->notNull(),
             'description' => $this->text()->null(),
-            'price' => $this->decimal(10,2)->notNull(),
+            'price' => $this->bigInteger()->notNull(),
             'created_at' => $this->integer()->notNull(),
             'updated_at' => $this->integer()->notNull()
         ]);
