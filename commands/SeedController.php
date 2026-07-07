@@ -28,7 +28,7 @@ class SeedController extends Controller
         $user->username = 'admin';
         $user->password_hash = Yii::$app->security->generatePasswordHash('admin');
         $user->auth_key = Yii::$app->security->generateRandomString();
-        $user->status = 10;
+        $user->status = User::STATUS_ACTIVE;
         $user->created_at = time();
         $user->updated_at = time();
 

@@ -56,4 +56,12 @@ class Product extends \yii\db\ActiveRecord
         ];
     }
 
+    public function canEdit()
+    {
+        return Yii::$app->user->can('product.update');
+    }
+    public function canDelete() 
+    {
+        return Yii::$app->user->can('product.delete');    
+    }
 }

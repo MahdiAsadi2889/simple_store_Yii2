@@ -3,6 +3,7 @@
 namespace app\models;
 
 use Yii;
+use yii\db\ActiveRecord;
 
 /**
  * This is the model class for table "{{%user}}".
@@ -15,9 +16,10 @@ use Yii;
  * @property int $created_at
  * @property int $updated_at
  */
-class User extends \yii\db\ActiveRecord
+class User extends ActiveRecord
 {
-
+    const STATUS_ACTIVE = 10;
+    const STATUS_INACTIVE = 0;
 
     /**
      * {@inheritdoc}
