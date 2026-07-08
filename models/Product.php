@@ -18,7 +18,8 @@ use yii\db\ActiveRecord;
  */
 class Product extends ActiveRecord
 {
-
+    const STATUS_INACTIVE = 0;
+    const STATUS_ACTIVE = 10;
 
     /**
      * {@inheritdoc}
@@ -44,7 +45,7 @@ class Product extends ActiveRecord
             [['title', 'price'], 'required'],
             [['description'], 'string'],
             [['price'], 'number'],
-            [['created_at', 'updated_at'], 'integer'],
+            [['status', 'created_at', 'updated_at'], 'integer'],
             [['title'], 'string', 'max' => 150],
         ];
     }
@@ -71,5 +72,16 @@ class Product extends ActiveRecord
     public function canDelete() 
     {
         return Yii::$app->user->can('product.delete');    
+    }
+
+    public static function getStatusList() : array {
+        return [
+            self::STATUS_ACTIVE => 'Active',
+            self::STATUS_INACTIVE => 'Inactive'
+        ];
+    }
+    public function getStatusLabel(): string
+    {
+        return self::getStatusList()[$this->status] ?? 'Unknown';
     }
 }

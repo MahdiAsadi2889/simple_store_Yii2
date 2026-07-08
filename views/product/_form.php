@@ -1,5 +1,6 @@
 <?php
 
+use app\models\Product;
 use yii\helpers\Html;
 use yii\widgets\ActiveForm;
 
@@ -17,6 +18,11 @@ use yii\widgets\ActiveForm;
     <?= $form->field($model, 'description')->textarea(['rows' => 6]) ?>
 
     <?= $form->field($model, 'price')->textInput() ?>
+
+    <?= $form->field($model, 'status')->dropDownList(
+        Product::getStatusList(),
+        ['prompt' => 'Select Status']
+    ) ?>
 
     <div class="form-group mt-3">
         <?= Html::submitButton('Save', ['class' => 'btn btn-success']) ?>
