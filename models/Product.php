@@ -3,6 +3,8 @@
 namespace app\models;
 
 use Yii;
+use yii\behaviors\TimestampBehavior;
+use yii\db\ActiveRecord;
 
 /**
  * This is the model class for table "{{%product}}".
@@ -14,7 +16,7 @@ use Yii;
  * @property int $created_at
  * @property int $updated_at
  */
-class Product extends \yii\db\ActiveRecord
+class Product extends ActiveRecord
 {
 
 
@@ -26,6 +28,12 @@ class Product extends \yii\db\ActiveRecord
         return '{{%product}}';
     }
 
+    public function behaviors()
+{
+    return [
+        TimestampBehavior::class,
+    ];
+}
     /**
      * {@inheritdoc}
      */
@@ -33,7 +41,7 @@ class Product extends \yii\db\ActiveRecord
     {
         return [
             [['description'], 'default', 'value' => null],
-            [['title', 'price', 'created_at', 'updated_at'], 'required'],
+            [['title', 'price'], 'required'],
             [['description'], 'string'],
             [['price'], 'number'],
             [['created_at', 'updated_at'], 'integer'],
