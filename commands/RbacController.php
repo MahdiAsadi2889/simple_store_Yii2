@@ -2,6 +2,7 @@
 
 namespace app\commands;
 
+use app\models\User;
 use yii\console\Controller;
 use Yii;
 use yii\rbac\Role;
@@ -32,13 +33,30 @@ class RbacController extends Controller
         $productCreate->description = 'Create Products';
         $auth->add($productCreate);
 
-        $productUpdate = $auth->createPermission('product.update');
+        $productUpdate = $auth->createPermission('product/update');
         $productUpdate->description = 'Update Products';
         $auth->add($productUpdate);
 
-        $productDelete = $auth->createPermission('product.delete');
+        $productDelete = $auth->createPermission('product/delete');
         $productDelete->description = 'Delete Products';
         $auth->add($productDelete);
+        // پایان ساخت Permission ها
+
+        // ارتباط والد با فرزند 
+        $auth->addChild($admin, $productView);
+        $auth->addChild($admin, $productCreate);
+        $auth->addChild($admin, $productUpdate);
+        $auth->addChild($admin, $productDelete);
+
+        $auth->addChild($customer, $productView);
+
+        // پایان ارتباط والد با فرزند
+
+        $user = User::findOne(['username' => 'admin']);
+
+        if($user !== null){
+            $auth->assign($admin, $user->id);
+        }
 
         $this->stdout("RBAC initialized successfully.\n");
     }
