@@ -41,6 +41,14 @@ $this->params['breadcrumbs'][] = $this->title;
             ],
             [
                 'class' => ActionColumn::className(),
+                'visibleButtons' => [
+                    'update' => function ($model) {
+                        return $model->canEdit();
+                    },
+                    'delete' => function($model) {
+                        return $model->canDelete();
+                    },
+                ],
                 'urlCreator' => function ($action, Product $model, $key, $index, $column) {
                     return Url::toRoute([$action, 'id' => $model->id]);
                 }
