@@ -4,6 +4,7 @@ namespace app\models;
 
 use Yii;
 use yii\db\ActiveRecord;
+use yii\web\IdentityInterface;
 
 /**
  * This is the model class for table "{{%user}}".
@@ -16,7 +17,9 @@ use yii\db\ActiveRecord;
  * @property int $created_at
  * @property int $updated_at
  */
-class User extends ActiveRecord
+
+
+class User extends ActiveRecord implements IdentityInterface
 {
     const STATUS_ACTIVE = 10;
     const STATUS_INACTIVE = 0;
@@ -60,4 +63,33 @@ class User extends ActiveRecord
         ];
     }
 
+    public static function findByUsername(string $username): ?self
+    {
+        return static::findOne(['username' => $username]);
+    }
+
+    public static function findIdentity($id): ?IdentityInterface
+    {
+        return static::findOne($id);
+    }
+
+    public static function findIdentityByAccessToken($token, $type = null): ?IdentityInterface
+    {
+        return null;
+    }
+
+    public function getId(): int
+    {
+        return $this->id;
+    }
+
+    public function getAuthKey(): string
+    {
+        return $this->auth_key;
+    }
+
+    public function validateAuthKey($authKey): bool
+    {
+        return $this->auth_key === $authKey;
+    }
 }

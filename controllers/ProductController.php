@@ -82,6 +82,7 @@ class ProductController extends BaseController
      */
     public function actionCreate()
     {
+        $this->checkAccess('product/create');
         $model = new Product();
 
         if ($this->request->isPost) {
@@ -106,6 +107,7 @@ class ProductController extends BaseController
      */
     public function actionUpdate($id)
     {
+        $this->checkAccess('product/update');
         $model = $this->findModel($id);
 
         if ($this->request->isPost && $model->load($this->request->post()) && $model->save()) {
@@ -126,6 +128,7 @@ class ProductController extends BaseController
      */
     public function actionDelete($id)
     {
+        $this->checkAccess('product/delete');
         $this->findModel($id)->delete();
 
         return $this->redirect(['index']);

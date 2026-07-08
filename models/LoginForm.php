@@ -13,6 +13,7 @@ use yii\base\Security;
  *
  * @property-read User|null $user
  *
+ */
 class LoginForm extends Model
 {
     public string $username = '';
@@ -52,7 +53,7 @@ class LoginForm extends Model
         if (!$this->hasErrors()) {
             $user = $this->getUser();
 
-            if (!$user || !$this->security->validatePassword($this->password, $user->passwordHash)) {
+            if (!$user || !$this->security->validatePassword($this->password, $user->password_hash)) {
                 $this->addError($attribute, 'Incorrect username or password.');
             }
         }
