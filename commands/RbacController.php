@@ -10,37 +10,26 @@ use yii\rbac\Permission;
 
 class RbacController extends Controller
 {
-    public function actionInit()
+    public function actionInit($reset = false)
     {
         $auth = Yii::$app->authManager;
-
-        // حذف اطلاعات قبلی 
-        $auth->removeAll();
+        if ($reset) {
+            $auth->removeAll();
+        }
 
         // ساخت Role ها 
-        $admin = $auth->createRole('admin');
-        $auth->add($admin);
-
-        $customer = $auth->createRole('customer');
-        $auth->add($customer);
+        $admin = $this->createRole('admin');
+        $customer = $this->createRole('customer');
 
         // ساخت Persmission ها 
-        $productView = $auth->createPermission('product/view');
-        $productView->description = 'View Products';
-        $auth->add($productView);
+        $productView = $this->createPermission('product/view', 'View Products');
 
-        $productCreate = $auth->createPermission('product/create');
-        $productCreate->description = 'Create Products';
-        $auth->add($productCreate);
+        $productCreate = $this->createPermission('product/create', 'Create Product');
 
-        $productUpdate = $auth->createPermission('product/update');
-        $productUpdate->description = 'Update Products';
-        $auth->add($productUpdate);
+        $productUpdate = $this->createPermission('product/update', 'Update Product');
 
-        $productDelete = $auth->createPermission('product/delete');
-        $productDelete->description = 'Delete Products';
-        $auth->add($productDelete);
-        // پایان ساخت Permission ها
+        $productDelete = $this->createPermission('product/delete', 'Delete Product');
+        // پایان ساخت Permission ها 
 
         // ارتباط والد با فرزند 
         $auth->addChild($admin, $productView);
@@ -54,10 +43,37 @@ class RbacController extends Controller
 
         $user = User::findOne(['username' => 'admin']);
 
-        if($user !== null){
+        if ($user !== null) {
             $auth->assign($admin, $user->id);
         }
 
         $this->stdout("RBAC initialized successfully.\n");
+    }
+
+    private function createRole(string $name): Role
+    {
+        $auth = Yii::$app->authManager;
+
+        $role = $auth->getRole($name);
+
+        if ($role === null) {
+            $role = $auth->createRole($name);
+            $auth->add($role);
+        }
+
+        return $role;
+    }
+
+    private function createPermission(string $name, string $description): Permission
+    {
+        $auth = Yii::$app->authManager;
+        $permission = $auth->getPermission($name);
+        if ($permission === null) {
+            $permission = $auth->createPermission($name);
+            $permission->description = $description;
+            $auth->add($permission);
+        }
+
+        return $permission;
     }
 }
