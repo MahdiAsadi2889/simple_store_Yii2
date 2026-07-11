@@ -7,7 +7,9 @@ use yii\widgets\ActiveForm;
 $form = ActiveForm::begin();
 ?>
 
-<?= $form->field($model, 'name')->textInput() ?>
+<?= $form->field($model, 'name')->textInput([
+    'disabled' => $disabledName ?? false
+]) ?>
 <?= $form->field($model, 'description')->textarea(['rows' => 4]) ?>
 
 <div class="form-group mt-3">

@@ -13,7 +13,7 @@ class RoleForm extends Model
     public function rules(): array
     {
         return [
-            [['name'], 'required'],
+            [['name','description'], 'required'],
             [['name'], 'string', 'max' => 64],
             [['description'], 'string']
         ];
