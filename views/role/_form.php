@@ -8,9 +8,9 @@ $form = ActiveForm::begin();
 ?>
 
 <?= $form->field($model, 'name')->textInput() ?>
-<?= $form->field($model, 'desctiption')->textarea(['rows' => 4]) ?>
+<?= $form->field($model, 'description')->textarea(['rows' => 4]) ?>
 
-<div class="form-group">
+<div class="form-group mt-3">
     <?= Html::submitButton('Save', ['class' => 'btn btn-success']) ?>
 </div>
 

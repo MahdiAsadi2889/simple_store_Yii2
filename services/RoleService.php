@@ -7,7 +7,7 @@ use DomainException;
 use Yii;
 use yii\rbac\Role;
 
-class RoleServices 
+class RoleService 
 {
     public function create(RoleForm $form): Role
     {
@@ -24,5 +24,10 @@ class RoleServices
     public function getAll(): array
     {
         return Yii::$app->authManager->getRoles();
+    }
+
+    public function find(string $name)
+    {
+        return Yii::$app->authManager->getRole($name);
     }
 }

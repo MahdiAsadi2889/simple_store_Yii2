@@ -15,7 +15,7 @@ class RoleForm extends Model
         return [
             [['name'], 'required'],
             [['name'], 'string', 'max' => 64],
-            [['descriotion'], 'string']
+            [['description'], 'string']
         ];
     }
 
