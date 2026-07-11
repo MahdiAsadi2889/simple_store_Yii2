@@ -46,4 +46,21 @@ class RoleService
 
         return $role;
     }
+
+    public function delete(string $name): bool
+    {
+        $auth = Yii::$app->authManager;
+        $role = $auth->getRole($name);
+
+        if ($role === null) {
+            throw new DomainException('Role not found.');
+        }
+
+
+        if ($name === 'admin') {
+            throw new DomainException('Admin role cannot be deleted.');
+        }
+
+        return $auth->remove($role);
+    }
 }

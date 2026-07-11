@@ -4,12 +4,28 @@ namespace app\controllers;
 
 use app\models\RoleForm;
 use app\services\RoleService;
+use DomainException;
 use Yii;
 use yii\data\ArrayDataProvider;
 use yii\web\NotFoundHttpException;
+use yii\filters\AccessControl;
 
 class RoleController extends BaseController
 {
+    public function behaviors()
+    {
+        return [
+            'access' => [
+                'class' => AccessControl::class,
+                'rules' => [
+                    [
+                        'allow' => true,
+                        'roles' => ['rbac/manage'],
+                    ],
+                ],
+            ],
+        ];
+    }
     public function actionIndex()
     {
         $roleService = new RoleService();
@@ -84,5 +100,19 @@ class RoleController extends BaseController
             'model' => $model,
             'role' => $role
         ]);
+    }
+
+    public function actionDelete(string $name)
+    {
+        $roleService = new RoleService();
+
+        try {
+            $role = $roleService->delete($name);
+            Yii::$app->session->setFlash('success', 'Role Deleted Successfully');
+        } catch (DomainException $e) {
+            Yii::$app->session->setFlash('error', $e->getMessage());
+        }
+
+        return $this->redirect(['index']);
     }
 }

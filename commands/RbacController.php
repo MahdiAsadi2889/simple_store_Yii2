@@ -29,6 +29,8 @@ class RbacController extends Controller
         $productUpdate = $this->createPermission('product/update', 'Update Product');
 
         $productDelete = $this->createPermission('product/delete', 'Delete Product');
+
+        $rbacManage = $this->createPermission('rbac/manage','Manage Roles and Permissions');
         // پایان ساخت Permission ها 
 
         // ارتباط والد با فرزند 
@@ -38,6 +40,8 @@ class RbacController extends Controller
         $auth->addChild($admin, $productDelete);
 
         $auth->addChild($customer, $productView);
+
+        $auth->addChild($admin, $rbacManage);
 
         // پایان ارتباط والد با فرزند
 
