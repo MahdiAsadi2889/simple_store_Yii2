@@ -20,4 +20,9 @@ class RoleServices
             $auth->add($role);
             return $role;
     }
+
+    public function getAll(): array
+    {
+        return Yii::$app->authManager->getRoles();
+    }
 }
