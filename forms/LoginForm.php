@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace app\models;
+namespace app\forms;
 
 use Yii;
 use yii\base\Model;
