@@ -35,9 +35,6 @@ $config = [
             'port' => 6379,
             'database' => 0,
         ],
-        'authManager' => [
-            'class' => yii\rbac\DbManager::class,
-        ],
         'user' => [
             'identityClass' => \app\models\User::class,
             'enableAutoLogin' => true,
