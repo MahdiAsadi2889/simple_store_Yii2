@@ -16,6 +16,14 @@ $config = [
                 'viewPath' => '@app/mail',
             ],
         ],
+        'definitions' => [
+            'app\services\JwtService' => [
+                'class' => 'app\services\JwtService',
+            ],
+            'app\services\AuthService' => [
+                'class' => 'app\services\AuthService',
+            ],
+        ],
     ],
     'aliases' => [
         '@bower' => '@vendor/bower-asset',
