@@ -5,13 +5,14 @@ namespace app\services;
 use app\models\User;
 use DateTimeImmutable;
 use DateTimeZone;
+use Lcobucci\Clock\SystemClock;
 use Lcobucci\JWT\Configuration;
 use Lcobucci\JWT\Signer\Hmac\Sha256;
 use Lcobucci\JWT\Signer\Key\InMemory;
 use Lcobucci\JWT\Token\Plain;
 use Lcobucci\JWT\Validation\Constraint\SignedWith;
 use Lcobucci\JWT\Validation\Constraint\IssuedBy;
-use Lcobucci\JWT\Validation\Constraint\ValidAt;
+use Lcobucci\JWT\Validation\Constraint\StrictValidAt;
 
 class JWTService
 {
@@ -29,7 +30,7 @@ class JWTService
         $token = $this->config->builder()
             ->issuedBy($_ENV['APP_URL'])
             ->issuedAt($now)
-            ->expiresAt($now->modify('+' . $_ENV['JWT_EXPIRE' . 'seconds']))
+            ->expiresAt($now->modify('+' . $_ENV['JWT_EXPIRE'] . 'seconds'))
             ->relatedTo((string)$user->id)
             ->withClaim('username', $user->username)
             ->getToken(
@@ -55,8 +56,18 @@ class JWTService
             $this->config->verificationKey()
         ),
         new IssuedBy($_ENV['APP_URL']),
-        new ValidAt(new SystemClock(new DateTimeZone('UTC')))
+        new StrictValidAt(
+            new SystemClock(new DateTimeZone('UTC'))
+        )
     );
 }
-    public function getPayload(string $token): array {}
+    public function getPayload(string $token): array
+    {
+        $token = $this->config->parser()->parse($token);
+        if (!$token instanceof Plain) {
+            return [];
+        }
+
+        return  $token->claims()->all();
+    }
 }
