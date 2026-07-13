@@ -2,6 +2,7 @@
 
 namespace app\forms;
 
+use app\models\User;
 use yii\base\Model;
 
 class RegisterForm extends Model
@@ -17,8 +18,10 @@ class RegisterForm extends Model
             [['username', 'email', 'password', 'confirmPassword'], 'required'],
 
             ['username', 'string', 'min' => 3, 'max' => 50],
+            ['username' , 'unique', 'targetClass' => User::class],
 
             ['email', 'email'],
+            ['email', 'unique', 'targetClass' => User::class],
 
             ['password', 'string', 'min' => 8],
 
