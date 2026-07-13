@@ -14,9 +14,11 @@ use Lcobucci\JWT\Validation\Constraint\SignedWith;
 use Lcobucci\JWT\Validation\Constraint\IssuedBy;
 use Lcobucci\JWT\Validation\Constraint\StrictValidAt;
 
-class JWTService
+class JwtService
 {
-    public function __construct(private Configuration $config)
+    private Configuration $config;
+
+    public function __construct()
     {
         $this->config = Configuration::forSymmetricSigner(
             new Sha256(),
