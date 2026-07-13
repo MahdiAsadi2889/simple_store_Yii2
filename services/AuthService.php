@@ -7,11 +7,13 @@ use app\forms\LoginForm;
 use app\forms\RegisterForm;
 use app\models\RefreshToken;
 use app\models\User;
+use RuntimeException;
 use Yii;
 use yii\db\Exception;
 
 class AuthService
 {
+    private const REFRESH_TOKEN_TTL = 60 * 60 * 24 * 30;
     public function __construct(private readonly JwtService $jwtService)
     {
 
@@ -95,9 +97,11 @@ class AuthService
         $refreshToken->user_id = $user->id;
         $refreshToken->selector = $selector;
         $refreshToken->token_hash = Yii::$app->security->generatePasswordHash($secret);
-        $refreshToken->expires_at = time() + (60 * 60 * 24 * 30);
+        $refreshToken->expires_at = time() + self::REFRESH_TOKEN_TTL;
         $refreshToken->created_at = time();
-        $refreshToken->save(false);
+        if (!$refreshToken->save(false)) {
+            throw new RuntimeException('Failed to create refresh token.');
+        }
 
         return $selector . '.' . $secret;
     }
