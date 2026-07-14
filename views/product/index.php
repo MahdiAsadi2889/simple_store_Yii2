@@ -18,10 +18,13 @@ $this->params['breadcrumbs'][] = $this->title;
     <h1><?= Html::encode($this->title) ?></h1>
 
     <p>
-        <?= Html::a('Create Product', ['create'], ['class' => 'btn btn-success']) ?>
+        <?php if (Yii::$app->user->can('product/create')): ?>
+            <?= Html::a('Create Product', ['create'], ['class' => 'btn btn-success']) ?>
+        <?php endif; ?>
     </p>
 
-    <?php // echo $this->render('_search', ['model' => $searchModel]); ?>
+    <?php // echo $this->render('_search', ['model' => $searchModel]); 
+    ?>
 
     <?= GridView::widget([
         'dataProvider' => $dataProvider,
@@ -45,7 +48,7 @@ $this->params['breadcrumbs'][] = $this->title;
                     'update' => function ($model) {
                         return $model->canEdit();
                     },
-                    'delete' => function($model) {
+                    'delete' => function ($model) {
                         return $model->canDelete();
                     },
                 ],
