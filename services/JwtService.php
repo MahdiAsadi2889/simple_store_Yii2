@@ -44,32 +44,40 @@ class JwtService
     }
 
     public function validate(string $token): bool
-{
-    $token = $this->config->parser()->parse($token);
+    {
+        try {
+            $token = $this->config->parser()->parse($token);
 
-    if (!$token instanceof Plain) {
-        return false;
+            if (!$token instanceof Plain) {
+                return false;
+            }
+
+            return $this->config->validator()->validate(
+                $token,
+                new SignedWith(
+                    $this->config->signer(),
+                    $this->config->verificationKey()
+                ),
+                new IssuedBy($_ENV['APP_URL']),
+            );
+
+        } catch (\Throwable $e) {
+            return false;
+        }
     }
-
-    return $this->config->validator()->validate(
-        $token,
-        new SignedWith(
-            $this->config->signer(),
-            $this->config->verificationKey()
-        ),
-        new IssuedBy($_ENV['APP_URL']),
-        new StrictValidAt(
-            new SystemClock(new DateTimeZone('UTC'))
-        )
-    );
-}
     public function getPayload(string $token): array
     {
-        $token = $this->config->parser()->parse($token);
-        if (!$token instanceof Plain) {
+        try {
+            $token = $this->config->parser()->parse($token);
+
+            if (!$token instanceof Plain) {
+                return [];
+            }
+
+            return $token->claims()->all();
+
+        } catch (\Throwable $e) {
             return [];
         }
-
-        return  $token->claims()->all();
     }
 }
