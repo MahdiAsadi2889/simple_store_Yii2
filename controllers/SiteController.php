@@ -6,7 +6,6 @@ namespace app\controllers;
 
 use Yii;
 use app\models\ContactForm;
-use app\models\LoginForm;
 use yii\captcha\CaptchaAction;
 use yii\filters\AccessControl;
 use yii\filters\VerbFilter;
@@ -16,7 +15,7 @@ use yii\web\Controller;
 use yii\web\ErrorAction;
 use yii\web\Response;
 
-class SiteController extends Controller
+class SiteController extends BaseController
 {
     public function __construct(
         $id,
@@ -33,25 +32,28 @@ class SiteController extends Controller
      */
     public function behaviors(): array
     {
-        return [
-            'access' => [
-                'class' => AccessControl::class,
-                'only' => ['logout'],
-                'rules' => [
-                    [
-                        'actions' => ['logout'],
-                        'allow' => true,
-                        'roles' => ['@'],
-                    ],
-                ],
-            ],
-            'verbs' => [
-                'class' => VerbFilter::class,
-                'actions' => [
-                    'logout' => ['post'],
+        $behaviors = parent::behaviors();
+
+        $behaviors['access'] = [
+            'class' => AccessControl::class,
+            'only' => ['logout'],
+            'rules' => [
+                [
+                    'actions' => ['logout'],
+                    'allow' => true,
+                    'roles' => ['@'],
                 ],
             ],
         ];
+
+        $behaviors['verbs'] = [
+            'class' => VerbFilter::class,
+            'actions' => [
+                'logout' => ['post'],
+            ],
+        ];
+
+        return $behaviors;
     }
 
     /**
