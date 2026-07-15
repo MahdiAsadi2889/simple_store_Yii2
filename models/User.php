@@ -3,6 +3,7 @@
 namespace app\models;
 
 use Yii;
+use yii\behaviors\TimestampBehavior;
 use yii\db\ActiveRecord;
 use yii\web\IdentityInterface;
 
@@ -19,13 +20,18 @@ use yii\web\IdentityInterface;
  * @property int $updated_at
  * @property int last_login_at
  */
-
-
 class User extends ActiveRecord implements IdentityInterface
 {
     const STATUS_INACTIVE = 0;
     const STATUS_ACTIVE = 1;
     const STATUS_BLOCKED = 2;
+
+    public function behaviors(): array
+    {
+        return [
+            TimestampBehavior::class,
+        ];
+    }
 
     /**
      * {@inheritdoc}
@@ -42,7 +48,7 @@ class User extends ActiveRecord implements IdentityInterface
     {
         return [
             [['status'], 'default', 'value' => 10],
-            [['username', 'email', 'password_hash', 'auth_key', 'created_at', 'updated_at'], 'required'],
+            [['username', 'email', 'password_hash', 'auth_key'], 'required'],
             [['status', 'created_at', 'updated_at', 'last_login_at'], 'integer'],
             [['username'], 'string', 'max' => 50],
             [['password_hash', 'auth_key'], 'string', 'max' => 255],
@@ -96,6 +102,7 @@ class User extends ActiveRecord implements IdentityInterface
     {
         $this->auth_key = Yii::$app->security->generateRandomString();
     }
+
     public function getAuthKey(): string
     {
         return $this->auth_key;

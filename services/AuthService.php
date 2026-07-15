@@ -35,8 +35,6 @@ class AuthService
         $user->generateAuthKey();
 
         $user->status = User::STATUS_ACTIVE;
-        $user->created_at = time();
-        $user->updated_at = time();
 
         if (!$user->save()) {
             return [
@@ -150,7 +148,6 @@ class AuthService
         $refreshToken->selector = $selector;
         $refreshToken->token_hash = Yii::$app->security->generatePasswordHash($secret);
         $refreshToken->expires_at = time() + self::REFRESH_TOKEN_TTL;
-        $refreshToken->created_at = time();
         if (!$refreshToken->save(false)) {
             throw new RuntimeException('Failed to create refresh token.');
         }

@@ -2,11 +2,23 @@
 
 namespace app\models;
 
+use yii\behaviors\TimestampBehavior;
 use yii\db\ActiveQuery;
 use yii\db\ActiveRecord;
 
 class RefreshToken extends ActiveRecord
 {
+    public function behaviors(): array
+    {
+        return [
+            [
+                'class' => TimestampBehavior::class,
+                'createdAtAttribute' => 'created_at',
+                'updatedAtAttribute' => false,
+            ],
+        ];
+    }
+
     public static function tableName(): string
     {
         return '{{%refresh_token}}';
@@ -17,7 +29,7 @@ class RefreshToken extends ActiveRecord
         return [
             [['user_id', 'expired_at', 'created_at', 'revoked_at'], 'integer'],
             [['token_hash'], 'string'],
-            [['user_id', 'expired_at', 'created_at', 'revoked_at'], 'required'],
+            [['user_id', 'expired_at', 'revoked_at'], 'required'],
         ];
     }
 
