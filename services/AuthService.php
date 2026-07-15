@@ -74,6 +74,58 @@ class AuthService
         return $this->issueToken($user);
     }
 
+    public function logout(string $refreshToken): void
+    {
+        if (!str_contains($refreshToken, '.')) {
+            return;
+        }
+
+        [$selector, $secret] = explode('.', $refreshToken, 2);
+        $token = RefreshToken::findOne([
+            'selector' => $selector,
+        ]);
+
+        if ($token === null) {
+            return;
+        }
+        if ($token->revoked_at !== null) {
+            return;
+        }
+
+        $this->revokeRefreshToken($token);
+
+        Yii::$app->response->cookies->remove('access_token');
+        Yii::$app->response->cookies->remove('refresh_token');
+
+        Yii::$app->user->logout(false);
+    }
+
+    public function refresh(string $refreshToken): ?array
+    {
+        if (!str_contains($refreshToken, '.')) {
+            return null;
+        }
+
+        [$selector, $secret] = explode('.', $refreshToken, 2);
+        $refreshToken = $this->findValidateRefreshToken($selector);
+
+        if ($refreshToken === null) {
+            return null;
+        }
+
+        if (!$this->verifyRefreshToken($secret, $refreshToken)) {
+            return null;
+        }
+
+        $user = User::findOne($refreshToken->user_id);
+
+        if ($user === null) {
+            throw new RuntimeException('Refresh token references non-existing user');
+        }
+
+        return $this->issueToken($user);
+    }
+
     private function issueToken(User $user): array
     {
         $accessToken = $this->jwtService->generate($user);
@@ -105,4 +157,38 @@ class AuthService
 
         return $selector . '.' . $secret;
     }
+
+    private function revokeRefreshToken(RefreshToken $refreshToken): void
+    {
+        $refreshToken->revoked_at = time();
+
+        if (!$refreshToken->save(false)) {
+            throw new RuntimeException('Failed to revoke refresh token.');
+        }
+    }
+
+    private function findValidateRefreshToken(string $selector): ?RefreshToken
+    {
+        $token = RefreshToken::findOne([
+            'selector' => $selector,
+        ]);
+        if ($token === null) {
+            return null;
+        }
+        if ($token->revoked_at !== null) {
+            return null;
+        }
+        if ($token->expires_at < time()) {
+            return null;
+        }
+
+        return $token;
+    }
+
+    private function verifyRefreshToken(string $secret, RefreshToken $refreshToken): bool
+    {
+        return Yii::$app->security->validatePassword($secret, $refreshToken->token_hash);
+    }
+
+
 }
