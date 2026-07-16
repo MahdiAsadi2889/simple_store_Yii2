@@ -4,6 +4,7 @@ namespace app\controllers;
 
 use app\models\Product;
 use app\models\ProductSearch;
+use app\services\ProductService;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
 use yii\filters\AccessControl;
@@ -14,30 +15,22 @@ use app\controllers\BaseController;
  */
 class ProductController extends BaseController
 {
+
+    public function __construct($id, $module, private readonly ProductService $productService, $config = [])
+    {
+        parent::__construct($id, $module, $config);
+    }
+
     /**
      * @inheritDoc
      */
-    public function behaviors()
+    public function behaviors(): array
     {
         return array_merge(
             parent::behaviors(),
             [
-                'access' => [
-                    'class' => AccessControl::class,
-                    'only' => [
-                        'create',
-                        'update',
-                        'delete'
-                    ],
-                    'rules' => [
-                        [
-                        'allow' => true,
-                        'roles' => ['@']
-                        ]
-                    ],
-                ],
                 'verbs' => [
-                    'class' => VerbFilter::className(),
+                    'class' => VerbFilter::class,
                     'actions' => [
                         'delete' => ['POST'],
                     ],
@@ -62,16 +55,11 @@ class ProductController extends BaseController
         ]);
     }
 
-    /**
-     * Displays a single Product model.
-     * @param int $id ID
-     * @return string
-     * @throws NotFoundHttpException if the model cannot be found
-     */
     public function actionView($id)
     {
+        $model = $this->productService->findById($id);
         return $this->render('view', [
-            'model' => $this->findModel($id),
+            'model' => $model,
         ]);
     }
 
@@ -82,17 +70,14 @@ class ProductController extends BaseController
      */
     public function actionCreate()
     {
-        $this->checkAccess('product/create');
         $model = new Product();
 
         if ($this->request->isPost) {
-            if ($model->load($this->request->post()) && $model->save()) {
+            $model->load($this->request->post());
+            if ($this->productService->create($model)) {
                 return $this->redirect(['view', 'id' => $model->id]);
             }
-        } else {
-            $model->loadDefaultValues();
         }
-
         return $this->render('create', [
             'model' => $model,
         ]);
@@ -107,13 +92,14 @@ class ProductController extends BaseController
      */
     public function actionUpdate($id)
     {
-        $this->checkAccess('product/update');
-        $model = $this->findModel($id);
+        $model = $this->productService->findById($id);
 
-        if ($this->request->isPost && $model->load($this->request->post()) && $model->save()) {
-            return $this->redirect(['view', 'id' => $model->id]);
+        if ($this->request->isPost) {
+            $model->load($this->request->post());
+            if ($this->productService->update($model)) {
+                return $this->redirect(['view', 'id' => $model->id]);
+            }
         }
-
         return $this->render('update', [
             'model' => $model,
         ]);
@@ -128,9 +114,8 @@ class ProductController extends BaseController
      */
     public function actionDelete($id)
     {
-        $this->checkAccess('product/delete');
-        $this->findModel($id)->delete();
-
+        $model = $this->productService->findById($id);
+        $this->productService->delete($model);
         return $this->redirect(['index']);
     }
 
@@ -141,12 +126,4 @@ class ProductController extends BaseController
      * @return Product the loaded model
      * @throws NotFoundHttpException if the model cannot be found
      */
-    protected function findModel($id)
-    {
-        if (($model = Product::findOne(['id' => $id])) !== null) {
-            return $model;
-        }
-
-        throw new NotFoundHttpException('The requested page does not exist.');
-    }
 }
