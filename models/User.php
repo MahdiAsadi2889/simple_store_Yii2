@@ -122,4 +122,15 @@ class User extends ActiveRecord implements IdentityInterface
     {
         return Yii::$app->security->validatePassword($password, $this->password_hash);
     }
+
+
+    public function getRoles()
+    {
+        return $this->hasMany(Role::class, ['id' => 'role_id'])->viaTable('user_role', ['user_id' => 'id']);
+    }
+
+    public function getrDirectPermissions()
+    {
+        return $this->hasMany(UserPermission::class, ['user_id' => 'id']);
+    }
 }
