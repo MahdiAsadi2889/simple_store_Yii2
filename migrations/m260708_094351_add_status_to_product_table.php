@@ -9,7 +9,7 @@ class m260708_094351_add_status_to_product_table extends Migration
      */
     public function safeUp()
     {
-        $this->addColumn('{{%product}}', 'status', $this->tinyInteger()->notNull()->defaultValue(10));
+        $this->addColumn('{{%product}}', 'status', $this->tinyInteger()->notNull()->defaultValue(1)->after('price'));
     }
 
     /**
