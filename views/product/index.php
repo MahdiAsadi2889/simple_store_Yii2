@@ -18,12 +18,10 @@ $this->params['breadcrumbs'][] = $this->title;
     <h1><?= Html::encode($this->title) ?></h1>
 
     <p>
-        <?php if (Yii::$app->user->can('product/create')): ?>
-            <?= Html::a('Create Product', ['create'], ['class' => 'btn btn-success']) ?>
-        <?php endif; ?>
+        <?= Html::a('Create Product', ['create'], ['class' => 'btn btn-success']) ?>
     </p>
 
-    <?php // echo $this->render('_search', ['model' => $searchModel]); 
+    <?php // echo $this->render('_search', ['model' => $searchModel]);
     ?>
 
     <?= GridView::widget([
@@ -44,14 +42,6 @@ $this->params['breadcrumbs'][] = $this->title;
             ],
             [
                 'class' => ActionColumn::className(),
-                'visibleButtons' => [
-                    'update' => function ($model) {
-                        return $model->canEdit();
-                    },
-                    'delete' => function ($model) {
-                        return $model->canDelete();
-                    },
-                ],
                 'urlCreator' => function ($action, Product $model, $key, $index, $column) {
                     return Url::toRoute([$action, 'id' => $model->id]);
                 }
