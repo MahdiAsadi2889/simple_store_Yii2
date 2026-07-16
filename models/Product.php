@@ -19,7 +19,7 @@ use yii\db\ActiveRecord;
 class Product extends ActiveRecord
 {
     const STATUS_INACTIVE = 0;
-    const STATUS_ACTIVE = 10;
+    const STATUS_ACTIVE = 1;
 
     /**
      * {@inheritdoc}
@@ -69,9 +69,9 @@ class Product extends ActiveRecord
     {
         return Yii::$app->user->can('product.update');
     }
-    public function canDelete() 
+    public function canDelete()
     {
-        return Yii::$app->user->can('product.delete');    
+        return Yii::$app->user->can('product.delete');
     }
 
     public static function getStatusList() : array {
