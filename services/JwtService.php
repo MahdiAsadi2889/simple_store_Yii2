@@ -13,6 +13,7 @@ use Lcobucci\JWT\Token\Plain;
 use Lcobucci\JWT\Validation\Constraint\SignedWith;
 use Lcobucci\JWT\Validation\Constraint\IssuedBy;
 use Lcobucci\JWT\Validation\Constraint\StrictValidAt;
+use Throwable;
 
 class JwtService
 {
@@ -25,6 +26,7 @@ class JwtService
             InMemory::plainText($_ENV['JWT_SECRET_KEY'])
         );
     }
+
     public function generate(User $user): string
     {
         $now = new DateTimeImmutable();
@@ -32,8 +34,9 @@ class JwtService
         $token = $this->config->builder()
             ->issuedBy($_ENV['APP_URL'])
             ->issuedAt($now)
+            ->canOnlyBeUsedAfter($now)
             ->expiresAt($now->modify('+' . $_ENV['JWT_EXPIRE'] . 'seconds'))
-            ->relatedTo((string)$user->id)
+            ->relatedTo((string) $user->id)
             ->withClaim('username', $user->username)
             ->getToken(
                 $this->config->signer(),
@@ -46,9 +49,9 @@ class JwtService
     public function validate(string $token): bool
     {
         try {
-            $token = $this->config->parser()->parse($token);
+            $token = $this->parseToken($token);
 
-            if (!$token instanceof Plain) {
+            if ($token === null) {
                 return false;
             }
 
@@ -59,25 +62,56 @@ class JwtService
                     $this->config->verificationKey()
                 ),
                 new IssuedBy($_ENV['APP_URL']),
+                new StrictValidAt(
+                    new SystemClock(new DateTimeZone('UTC'))
+                )
             );
 
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             return false;
         }
     }
+
+
     public function getPayload(string $token): array
     {
         try {
-            $token = $this->config->parser()->parse($token);
+            $token = $this->parseToken($token);
 
-            if (!$token instanceof Plain) {
+            if ($token === null) {
                 return [];
             }
 
             return $token->claims()->all();
 
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             return [];
+        }
+    }
+
+    public function getUser(string $token): ?User
+    {
+        if (!$this->validate($token)) {
+            return null;
+        }
+        $payload = $this->getPayload($token);
+
+        $userId = $payload['sub'] ?? null;
+
+        if (!$userId) {
+            return null;
+        }
+        return User::findOne($userId);
+    }
+
+    private function parseToken(string $token): ?Plain
+    {
+        try {
+            $parsedToken = $this->config->parser()->parse($token);
+
+            return $parsedToken instanceof Plain ? $parsedToken : null;
+        } catch (Throwable) {
+            return null;
         }
     }
 }

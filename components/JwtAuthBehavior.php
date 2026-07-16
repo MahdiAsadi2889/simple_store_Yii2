@@ -38,26 +38,14 @@ class JwtAuthBehavior extends Behavior
         if (!$token) {
             return true;
         }
-
-        if (!$this->jwtService->validate($token)) {
-
+        $user = $this->jwtService->getUser($token);
+        if ($user === null) {
             return true;
         }
 
-        $payload = $this->jwtService->getPayload($token);
-
-        $userId = $payload['sub'] ?? null;
-
-        if (!$userId) {
-            return true;
+        if (Yii::$app->user->isGuest || Yii::$app->user->id != $user->id) {
+            Yii::$app->user->switchIdentity($user, 0);
         }
-
-        $user = User::findOne($userId);
-
-        if ($user !== null) {
-            Yii::$app->user->login($user, 0);
-        }
-
         return true;
     }
 
