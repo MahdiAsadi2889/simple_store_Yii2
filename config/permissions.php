@@ -9,4 +9,5 @@ return [
     'user/view',
     'user/create',
     'user/update',
+    'user/delete'
 ];
