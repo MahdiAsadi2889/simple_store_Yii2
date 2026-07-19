@@ -15,6 +15,7 @@ class UserPermission extends ActiveRecord
     {
         return [
             [['user_id', 'permission'], 'required'],
+            [['user_id', 'permission'], 'unique', 'targetAttribute' => ['user_id', 'permission']],
             [['user_id'], 'integer'],
             [['permission'], 'string', 'max' => 100],
         ];

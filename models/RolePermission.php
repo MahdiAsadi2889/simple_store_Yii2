@@ -15,6 +15,7 @@ class RolePermission extends ActiveRecord
     {
         return [
             [['role_id', 'permission'], 'required'],
+            [['role_id', 'permission'], 'unique', 'targetAttribute' => ['role_id', 'permission']],
             [['role_id'], 'integer'],
             [['permission'], 'string', 'max' => 100],
         ];
@@ -22,6 +23,6 @@ class RolePermission extends ActiveRecord
 
     public function getRole()
     {
-        return $this->hasOne(Role::class, ['id'=> 'role_id']);
+        return $this->hasOne(Role::class, ['id' => 'role_id']);
     }
 }
