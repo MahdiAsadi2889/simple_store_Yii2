@@ -2,65 +2,52 @@
 
 namespace app\services;
 
-use app\models\RoleForm;
-use DomainException;
+use app\models\User;
+use app\models\UserRole;
 use Yii;
-use yii\rbac\Role;
+use app\models\Role;
+use RuntimeException;
 
 class RoleService
 {
-    public function create(RoleForm $form): Role
+    public function createRole(Role $role): bool
     {
-        $auth = Yii::$app->authManager;
-        if ($auth->getRole($form->name) !== null) {
-            throw new DomainException('Role already exists');
-        }
-        $role = $auth->createRole($form->name);
-        $role->description = $form->description;
-        $auth->add($role);
-        return $role;
-    }
-
-    public function getAll(): array
-    {
-        return Yii::$app->authManager->getRoles();
-    }
-
-    public function find(string $name)
-    {
-        return Yii::$app->authManager->getRole($name);
-    }
-
-    public function update(string $name, RoleForm $form)
-    {
-        $auth = Yii::$app->authManager;
-
-        $role = $auth->getRole($name);
-        if ($role === null) {
-            throw new DomainException('Role not found.');
+        if (!$role->validate()) {
+            return false;
         }
 
-        $role->description = $form->description;
-
-        $auth->update($name, $role);
-
-        return $role;
+        return $role->save(false);
     }
 
-    public function delete(string $name): bool
+    public function deleteRole(int $roleId): bool
     {
-        $auth = Yii::$app->authManager;
-        $role = $auth->getRole($name);
 
-        if ($role === null) {
-            throw new DomainException('Role not found.');
+    }
+
+    public function assignRoleToUser(User $user, Role $role): bool
+    {
+        if(UserRole::find()->where([
+            'user_id' => $user->id,
+            'role_id' => $role->id
+        ])->exists()){
+            return false;
         }
 
-
-        if ($name === 'admin') {
-            throw new DomainException('Admin role cannot be deleted.');
+        $userRole = new UserRole();
+        $userRole->user_id = $user->id;
+        $userRole->role_id = $role->id;
+        if(!$userRole->validate()){
+            return false;
         }
+        return $userRole->save(false);
+    }
 
-        return $auth->remove($role);
+    public function removeRoleFromUser(User $user, Role $role): bool
+    {
+        $userRole = UserRole::find()->where(['user_id' => $user->id, 'role_id' => $role->id])->one();
+        if($userRole === null){
+            return false;
+        }
+        return $userRole->delete() !== false;
     }
 }

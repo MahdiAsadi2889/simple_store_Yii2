@@ -2,117 +2,54 @@
 
 namespace app\controllers;
 
-use app\models\RoleForm;
+use app\models\Role;
+use app\models\User;
 use app\services\RoleService;
-use DomainException;
-use Yii;
-use yii\data\ArrayDataProvider;
-use yii\web\NotFoundHttpException;
-use yii\filters\AccessControl;
 
 class RoleController extends BaseController
 {
-    public function behaviors()
+    public function __construct($id, $module, private readonly RoleService $roleService, $config = [])
     {
-        return [
-            'access' => [
-                'class' => AccessControl::class,
-                'rules' => [
-                    [
-                        'allow' => true,
-                        'roles' => ['rbac/manage'],
-                    ],
-                ],
-            ],
-        ];
-    }
-    public function actionIndex()
-    {
-        $roleService = new RoleService();
-
-        $roles = $roleService->getAll();
-
-        $dataProvider = new ArrayDataProvider([
-            'allModels' => array_values($roles),
-            'pagination' => [
-                'pageSize' => 10
-            ],
-            'sort' => [
-                'attributes' => ['name', 'description']
-            ]
-        ]);
-
-        return $this->render('index', [
-            'dataProvider' => $dataProvider
-        ]);
+        parent::__construct($id, $module, $config);
     }
 
-    public function actionView(string $name)
-    {
-        $roleService = new RoleService();
-        $role = $roleService->find($name);
-
-        if ($role === null) {
-            throw new NotFoundHttpException('Role not found.');
-        }
-        return $this->render('view', [
-            'role' => $role,
-        ]);
-    }
     public function actionCreate()
     {
-        $model = new RoleForm();
-        $roleService = new RoleService();
+        $model = new Role();
 
-        if ($model->load(Yii::$app->request->post()) && $model->validate()) {
-            $roleService->create($model);
-            Yii::$app->session->setFlash('success', 'Role created successfully.');
-
-            return $this->redirect(['index']);
+        if ($this->request->isPost) {
+            $model->load($this->request->post());
+            if ($this->roleService->createRole($model)) {
+                return $this->redirect([
+                    'view',
+                    'id' => $model->id
+                ]);
+            }
         }
-
         return $this->render('create', [
-            'model' => $model
-        ]);
-    }
-
-    public function actionUpdate(string $name)
-    {
-        $roleService = new RoleService();
-
-        $role = $roleService->find($name);
-
-        if ($role === null) {
-            throw new NotFoundHttpException('Role not found.');
-        }
-
-        $model = new RoleForm();
-        $model->name = $role->name;
-        $model->description = $role->description;
-
-        if ($model->load(Yii::$app->request->post()) && $model->validate()) {
-            $roleService->update($name, $model);
-            Yii::$app->session->setFlash('success', 'Role updated successfully.');
-            return $this->redirect(['view', 'name' => $name]);
-        }
-
-        return $this->render('update', [
             'model' => $model,
-            'role' => $role
         ]);
     }
 
-    public function actionDelete(string $name)
+    public function actionTestAssign()
     {
-        $roleService = new RoleService();
+        $user = User::findOne(1);
+        $role = Role::findOne(1);
 
-        try {
-            $role = $roleService->delete($name);
-            Yii::$app->session->setFlash('success', 'Role Deleted Successfully');
-        } catch (DomainException $e) {
-            Yii::$app->session->setFlash('error', $e->getMessage());
+        if ($this->roleService->assignRoleToUser($user, $role)) {
+            return 'Role assigned successfully';
         }
+        return 'Role already assigned or failed';
+    }
 
-        return $this->redirect(['index']);
+    public function actionRemoveAssign()
+    {
+        $user = User::findOne(1);
+        $role = Role::findOne(1);
+
+        if ($this->roleService->removeRoleFromUser($user, $role)) {
+            return 'Role removed successfully';
+        }
+        return 'Role remove failed';
     }
 }
