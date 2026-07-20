@@ -19,5 +19,12 @@ return [
     'role/create',
     'role/update',
     'role/delete',
+    'role/assign',
+    'role/remove',
+
+    //Permission
+
+    'permission/assign',
+    'permission/remove',
 
 ];
