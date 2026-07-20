@@ -5,6 +5,7 @@ namespace app\controllers;
 use app\models\Product;
 use app\models\ProductSearch;
 use app\services\ProductService;
+use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
 use yii\filters\AccessControl;
@@ -46,6 +47,7 @@ class ProductController extends BaseController
      */
     public function actionIndex()
     {
+        $this->checkAccess('product/view');
         $searchModel = new ProductSearch();
         $dataProvider = $searchModel->search($this->request->queryParams);
 
@@ -57,6 +59,7 @@ class ProductController extends BaseController
 
     public function actionView($id)
     {
+        $this->checkAccess('product/view');
         $model = $this->productService->findById($id);
         return $this->render('view', [
             'model' => $model,
@@ -67,9 +70,11 @@ class ProductController extends BaseController
      * Creates a new Product model.
      * If creation is successful, the browser will be redirected to the 'view' page.
      * @return string|\yii\web\Response
+     * @throws ForbiddenHttpException
      */
     public function actionCreate()
     {
+        $this->checkAccess('product/create');
         $model = new Product();
 
         if ($this->request->isPost) {
@@ -92,6 +97,7 @@ class ProductController extends BaseController
      */
     public function actionUpdate($id)
     {
+        $this->checkAccess('product/update');
         $model = $this->productService->findById($id);
 
         if ($this->request->isPost) {
@@ -114,6 +120,7 @@ class ProductController extends BaseController
      */
     public function actionDelete($id)
     {
+        $this->checkAccess('product/delete');
         $model = $this->productService->findById($id);
         $this->productService->delete($model);
         return $this->redirect(['index']);
