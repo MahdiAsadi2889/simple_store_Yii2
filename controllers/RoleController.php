@@ -13,6 +13,22 @@ class RoleController extends BaseController
         parent::__construct($id, $module, $config);
     }
 
+    public function actionIndex()
+    {
+        //$this->checkAccess('role/view');
+        $roles = $this->roleService->findAllRoles();
+
+        return $this->render('index', ['roles' => $roles]);
+
+    }
+
+    public function actionView(int $id)
+    {
+        $role = $this->roleService->findById($id);
+
+        return $this->render('view', ['role' => $role]);
+    }
+
     public function actionCreate()
     {
         $model = new Role();
@@ -29,27 +45,5 @@ class RoleController extends BaseController
         return $this->render('create', [
             'model' => $model,
         ]);
-    }
-
-    public function actionTestAssign()
-    {
-        $user = User::findOne(1);
-        $role = Role::findOne(1);
-
-        if ($this->roleService->assignRoleToUser($user, $role)) {
-            return 'Role assigned successfully';
-        }
-        return 'Role already assigned or failed';
-    }
-
-    public function actionRemoveAssign()
-    {
-        $user = User::findOne(1);
-        $role = Role::findOne(1);
-
-        if ($this->roleService->removeRoleFromUser($user, $role)) {
-            return 'Role removed successfully';
-        }
-        return 'Role remove failed';
     }
 }

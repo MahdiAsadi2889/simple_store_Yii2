@@ -7,6 +7,7 @@ use app\models\UserRole;
 use Yii;
 use app\models\Role;
 use RuntimeException;
+use yii\web\NotFoundHttpException;
 
 class RoleService
 {
@@ -19,24 +20,38 @@ class RoleService
         return $role->save(false);
     }
 
-    public function deleteRole(int $roleId): bool
-    {
+//    public function deleteRole(int $roleId): bool
+//    {
+//
+//    }
 
+    public function findAllRoles(): array
+    {
+        return Role::find()->orderBy(['created_at' => SORT_DESC])->all();
+    }
+
+    public function findById(int $id): Role
+    {
+        $role = Role::findOne($id);
+        if ($role === null) {
+            throw new NotFoundHttpException('Role not found');
+        }
+        return $role;
     }
 
     public function assignRoleToUser(User $user, Role $role): bool
     {
-        if(UserRole::find()->where([
+        if (UserRole::find()->where([
             'user_id' => $user->id,
             'role_id' => $role->id
-        ])->exists()){
+        ])->exists()) {
             return false;
         }
 
         $userRole = new UserRole();
         $userRole->user_id = $user->id;
         $userRole->role_id = $role->id;
-        if(!$userRole->validate()){
+        if (!$userRole->validate()) {
             return false;
         }
         return $userRole->save(false);
@@ -45,7 +60,7 @@ class RoleService
     public function removeRoleFromUser(User $user, Role $role): bool
     {
         $userRole = UserRole::find()->where(['user_id' => $user->id, 'role_id' => $role->id])->one();
-        if($userRole === null){
+        if ($userRole === null) {
             return false;
         }
         return $userRole->delete() !== false;
