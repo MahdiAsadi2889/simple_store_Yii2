@@ -2,6 +2,7 @@
 
 namespace app\models;
 
+use yii\behaviors\TimestampBehavior;
 use yii\db\ActiveRecord;
 
 class RolePermission extends ActiveRecord
@@ -11,6 +12,16 @@ class RolePermission extends ActiveRecord
         return '{{%role_permission}}';
     }
 
+    public function behaviors(): array
+    {
+        return [
+            [
+                'class' => TimestampBehavior::class,
+                'createdAtAttribute' => 'created_at',
+                'updatedAtAttribute' => false,
+            ],
+        ];
+    }
     public function rules(): array
     {
         return [
