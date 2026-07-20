@@ -9,10 +9,10 @@ use yii\base\InvalidConfigException;
 use yii\di\NotInstantiableException;
 use yii\web\Controller;
 use yii\web\ForbiddenHttpException;
+use yii\web\UnauthorizedHttpException;
 
 class BaseController extends Controller
 {
-
     public function behaviors(): array
     {
         return [
@@ -36,10 +36,10 @@ class BaseController extends Controller
         $userId = Yii::$app->user->id;
 
         if ($userId === null) {
-            throw new ForbiddenHttpException('Login is Required');
+            throw new UnauthorizedHttpException('Login is required.');
         }
 
-        if(!$this->getRbacService()->can($userId, $permission)) {
+        if (!$this->getRbacService()->can($userId, $permission)) {
             throw new ForbiddenHttpException('Access denied');
         }
     }
