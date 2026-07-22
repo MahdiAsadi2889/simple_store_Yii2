@@ -15,11 +15,11 @@ class RoleController extends BaseController
 
     public function actionIndex()
     {
-        //$this->checkAccess('role/view');
-        $roles = $this->roleService->findAllRoles();
+        $dataProvider = $this->roleService->getDataProvider();
 
-        return $this->render('index', ['roles' => $roles]);
-
+        return $this->render('index', [
+            'dataProvider' => $dataProvider,
+        ]);
     }
 
     public function actionView(int $id)
@@ -43,6 +43,23 @@ class RoleController extends BaseController
             }
         }
         return $this->render('create', [
+            'model' => $model,
+        ]);
+    }
+
+    public function actionUpdate(int $id)
+    {
+        $model = $this->roleService->findById($id);
+        if ($this->request->isPost) {
+            $model->load($this->request->post());
+            if ($this->roleService->updateRole($model)) {
+                return $this->redirect([
+                    'view',
+                    'id' => $model->id
+                ]);
+            }
+        }
+        return $this->render('update', [
             'model' => $model,
         ]);
     }

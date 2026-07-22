@@ -7,6 +7,7 @@ use app\models\UserRole;
 use Yii;
 use app\models\Role;
 use RuntimeException;
+use yii\data\ActiveDataProvider;
 use yii\web\NotFoundHttpException;
 
 class RoleService
@@ -19,15 +20,20 @@ class RoleService
 
         return $role->save(false);
     }
-
-//    public function deleteRole(int $roleId): bool
-//    {
-//
-//    }
-
-    public function findAllRoles(): array
+    public function updateRole(Role $role): bool
     {
-        return Role::find()->orderBy(['created_at' => SORT_DESC])->all();
+        if (!$role->validate()) {
+            return false;
+        }
+
+        return $role->save(false);
+    }
+
+    public function getDataProvider(): ActiveDataProvider
+    {
+        return new ActiveDataProvider([
+            'query' => Role::find(),
+        ]);
     }
 
     public function findById(int $id): Role
@@ -65,4 +71,9 @@ class RoleService
         }
         return $userRole->delete() !== false;
     }
+
+    //    public function deleteRole(int $roleId): bool
+//    {
+//
+//    }
 }

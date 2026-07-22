@@ -30,7 +30,7 @@ $this->title = 'Roles';
             [
                 'class' => ActionColumn::class,
                 'urlCreator' => function ($action, $model) {
-                    return [$action, 'name' => $model->name];
+                    return [$action, 'id' => $model->id];
                 },
             ],
         ],
