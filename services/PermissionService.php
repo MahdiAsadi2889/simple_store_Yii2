@@ -10,23 +10,45 @@ use app\models\UserPermission;
 
 class PermissionService
 {
-    public function assignPermissionToRole(Role $role, string $permission)
+    public function assignPermissionsToRole(Role $role, array $permissions): bool
     {
-        if (!PermissionRegistry::exists($permission)) {
-            return false;
+        $permissions = array_unique($permissions);
+
+        foreach ($permissions as $permission) {
+            if (!PermissionRegistry::exists($permission)) {
+                return false;
+            }
         }
 
-        if (RolePermission::find()->where(['role_id' => $role->id, 'permission' => $permission])->exists()) {
-            return false;
-        }
-        $rolePermission = new RolePermission();
-        $rolePermission->role_id = $role->id;
-        $rolePermission->permission = $permission;
+        $currentPermissions = RolePermission::find()
+            ->select('permission')
+            ->where(['role_id' => $role->id])
+            ->column();
 
-        if (!$rolePermission->validate()) {
-            return false;
+        $permissionsToAdd = array_diff($permissions, $currentPermissions);
+        $permissionsToRemove = array_diff($currentPermissions, $permissions);
+
+        if (!empty($permissionsToRemove)) {
+            RolePermission::deleteAll([
+                'and',
+                ['role_id' => $role->id],
+                ['IN', 'permission', $permissionsToRemove],
+            ]);
         }
-        return $rolePermission->save(false);
+
+        foreach ($permissionsToAdd as $permission) {
+            $rolePermission = new RolePermission();
+            $rolePermission->role_id = $role->id;
+            $rolePermission->permission = $permission;
+
+            if (!$rolePermission->validate()) {
+                return false;
+            }
+
+            $rolePermission->save(false);
+        }
+
+        return true;
     }
 
     public function removePermissionFromRole(Role $role, string $permission): bool
@@ -44,23 +66,43 @@ class PermissionService
         return $rolePermission->delete() !== false;
     }
 
-    public function assignPermissionToUser(User $user, string $permission)
+    public function assignPermissionsToUser(User $user, array $permissions): bool
     {
-        if (!PermissionRegistry::exists($permission)) {
-            return false;
+        $permissions = array_unique($permissions);
+        foreach ($permissions as $permission) {
+            if (!PermissionRegistry::exists($permission)) {
+                return false;
+            }
         }
-        if (UserPermission::find()->where(['user_id' => $user->id, 'permission' => $permission])->exists()) {
-            return false;
+        $currentPermissions = RolePermission::find()
+            ->select('permission')
+            ->where(['role_id' => $user->id])
+            ->column();
+        $permissionsToAdd = array_diff($permissions, $currentPermissions);
+        $permissionsToRemove = array_diff($currentPermissions, $permissions);
+
+        if (!empty($permissionsToRemove)) {
+            UserPermission::deleteAll([
+                'and',
+                ['user_id' => $user->id],
+                ['IN', 'permission', $permissionsToRemove],
+            ]);
         }
 
-        $userPermission = new UserPermission();
-        $userPermission->user_id = $user->id;
-        $userPermission->permission = $permission;
+        foreach ($permissionsToAdd as $permission) {
 
-        if (!$userPermission->validate()) {
-            return false;
+            $userPermission = new UserPermission();
+            $userPermission->user_id = $user->id;
+            $userPermission->permission = $permission;
+
+            if (!$userPermission->validate()) {
+                return false;
+            }
+
+            $userPermission->save(false);
         }
-        return $userPermission->save(false);
+
+        return true;
     }
 
 

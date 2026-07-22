@@ -19,24 +19,35 @@ class PermissionController extends BaseController
     public function actionAssignPermissionToRole()
     {
 //        $this->checkAccess('permission/assign');
-        $roleId = Yii::$app->request->post('role_id');
-        $permission = Yii::$app->request->post('permission');
+        if ($this->request->isPost) {
+            $roleId = Yii::$app->request->post('role_id');
+            $permissions = Yii::$app->request->post('permissions', []);
 
-        $role = Role::findOne($roleId);
+            $role = Role::findOne($roleId);
 
-        if ($role === null) {
-            throw new NotFoundHttpException('Role Not Found');
+            if ($role === null) {
+                throw new NotFoundHttpException('Role Not Found');
+            }
+
+            $result = $this->permissionService->assignPermissionsToRole($role, $permissions);
+
+            Yii::$app->session->setFlash(
+                $result ? 'success' : 'error',
+                $result
+                    ? 'Permissions updated successfully'
+                    : 'Failed to update permissions'
+            );
+
+            return $this->redirect(['role/index']);
         }
-
-        $result = $this->permissionService->assignPermissionToRole($role, $permission);
-        Yii::$app->session->setFlash($result ? 'success' : 'error', $result ? 'Permission assigned successfully' : 'Failed to assign permission to role');
-
-        return $this->redirect(['role/index']);
+        return $this->render('assign-role', [
+            'roles' => Role::find()->all(),
+        ]);
     }
 
     public function actionRemovePermissionFromRole()
     {
-        $this->checkAccess('permission/remove');
+//        $this->checkAccess('permission/remove');
         $roleId = Yii::$app->request->post('role_id');
         $permission = Yii::$app->request->post('permission');
 
@@ -52,23 +63,28 @@ class PermissionController extends BaseController
 
     public function actionAssignPermissionToUser()
     {
-        $this->checkAccess('permission/assign');
-        $userId = Yii::$app->request->post('user_id');
-        $permission = Yii::$app->request->post('permission');
+        if($this->request->isPost) {
+//        $this->checkAccess('permission/assign');
+            $userId = Yii::$app->request->post('user_id');
+            $permissions = Yii::$app->request->post('permissions', []);
 
-        $user = User::findOne($userId);
-        if ($user === null) {
-            throw new NotFoundHttpException('User Not Found');
+            $user = User::findOne($userId);
+            if ($user === null) {
+                throw new NotFoundHttpException('User Not Found');
+            }
+
+            $result = $this->permissionService->assignPermissionsToUser($user, $permissions);
+            Yii::$app->session->setFlash($result ? 'success' : 'error', $result ? 'Permission assigned successfully' : 'Failed to assign permission to user');
+            return $this->redirect(['user/index']);
         }
-
-        $result = $this->permissionService->assignPermissionToUser($user, $permission);
-        Yii::$app->session->setFlash($result ? 'success' : 'error', $result ? 'Permission assigned successfully' : 'Failed to assign permission to user');
-        return $this->redirect(['user/index']);
+        return $this->render('assign-user', [
+            'users' => User::find()->all(),
+        ]);
     }
 
     public function actionRemovePermissionFromUser()
     {
-        $this->checkAccess('permission/assign');
+//        $this->checkAccess('permission/assign');
         $userId = Yii::$app->request->post('user_id');
         $permission = Yii::$app->request->post('permission');
 
@@ -80,5 +96,4 @@ class PermissionController extends BaseController
         Yii::$app->session->setFlash($result ? 'success' : 'error', $result ? 'Permission removed successfully' : 'Failed to remove permission from user');
         return $this->redirect(['user/index']);
     }
-
 }
