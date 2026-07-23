@@ -16,84 +16,74 @@ class PermissionController extends BaseController
         parent::__construct($id, $module, $config);
     }
 
-    public function actionAssignPermissionToRole()
+    public function actionSyncPermissionsToRole()
     {
-//        $this->checkAccess('permission/assign');
-        if ($this->request->isPost) {
-            $roleId = Yii::$app->request->post('role_id');
-            $permissions = Yii::$app->request->post('permissions', []);
+        $selectedRoleId = Yii::$app->request->get('role_id');
+        $currentPermissions = [];
 
-            $role = Role::findOne($roleId);
+        if ($this->request->isPost) {
+            $selectedRoleId = $this->request->post('role_id');
+            $permissions = Yii::$app->request->post('permissions', []);
+            $role = Role::findOne($selectedRoleId);
 
             if ($role === null) {
-                throw new NotFoundHttpException('Role Not Found');
+                throw new NotFoundHttpException('Role not found');
             }
 
-            $result = $this->permissionService->assignPermissionsToRole($role, $permissions);
+            $result = $this->permissionService->syncPermissionsToRole($role, $permissions);
 
-            Yii::$app->session->setFlash(
-                $result ? 'success' : 'error',
-                $result
-                    ? 'Permissions updated successfully'
-                    : 'Failed to update permissions'
-            );
+            Yii::$app->session->setFlash($result ? 'success' : 'error', $result ? 'Permissions synced successfully' : 'Failed to synced permissions');
 
-            return $this->redirect(['role/index']);
+            return $this->redirect([
+                'sync-permissions-to-role',
+                'role_id' => $selectedRoleId,
+            ]);
         }
-        return $this->render('assign-role', [
+        if($selectedRoleId){
+            $currentPermissions = $this->permissionService->getRolePermissions((int)$selectedRoleId);
+        }
+
+        return $this->render('sync-role',[
             'roles' => Role::find()->all(),
+            'selectedRoleId' => $selectedRoleId,
+            'currentPermissions' => $currentPermissions
         ]);
     }
 
-    public function actionRemovePermissionFromRole()
+    public function actionSyncPermissionsToUser()
     {
-//        $this->checkAccess('permission/remove');
-        $roleId = Yii::$app->request->post('role_id');
-        $permission = Yii::$app->request->post('permission');
+        $selectedUserId = Yii::$app->request->get('user_id');
+        $currentPermissions = [];
 
-        $role = Role::findOne($roleId);
-
-        if ($role === null) {
-            throw new NotFoundHttpException('Role Not Found');
-        }
-        $result = $this->permissionService->removePermissionFromRole($role, $permission);
-        Yii::$app->session->setFlash($result ? 'success' : 'error', $result ? 'Permission removed successfully' : 'Failed to remove permission from role');
-        return $this->redirect(['role/index']);
-    }
-
-    public function actionAssignPermissionToUser()
-    {
-        if($this->request->isPost) {
-//        $this->checkAccess('permission/assign');
-            $userId = Yii::$app->request->post('user_id');
+        if ($this->request->isPost) {
+            $selectedUserId = Yii::$app->request->post('user_id');
             $permissions = Yii::$app->request->post('permissions', []);
+            $user = User::findOne($selectedUserId);
 
-            $user = User::findOne($userId);
             if ($user === null) {
                 throw new NotFoundHttpException('User Not Found');
             }
 
-            $result = $this->permissionService->assignPermissionsToUser($user, $permissions);
-            Yii::$app->session->setFlash($result ? 'success' : 'error', $result ? 'Permission assigned successfully' : 'Failed to assign permission to user');
-            return $this->redirect(['user/index']);
+            $result = $this->permissionService->syncPermissionsToUser($user, $permissions);
+
+            Yii::$app->session->setFlash(
+                $result ? 'success' : 'error',
+                $result ? 'Permissions synced successfully' : 'Failed to synced permissions'
+            );
+            return $this->redirect([
+                'sync-permissions-to-user',
+                'user_id' => $selectedUserId,
+            ]);
         }
-        return $this->render('assign-user', [
+        if ($selectedUserId) {
+            $currentPermissions = $this->permissionService->getUserPermissions((int) $selectedUserId);
+        }
+
+        return $this->render('sync-user', [
             'users' => User::find()->all(),
+            'selectedUserId' => $selectedUserId,
+            'currentPermissions' => $currentPermissions,
         ]);
     }
 
-    public function actionRemovePermissionFromUser()
-    {
-//        $this->checkAccess('permission/assign');
-        $userId = Yii::$app->request->post('user_id');
-        $permission = Yii::$app->request->post('permission');
-
-        $user = User::findOne($userId);
-        if ($user === null) {
-            throw new NotFoundHttpException('User Not Found');
-        }
-        $result = $this->permissionService->removePermissionFromUser($user, $permission);
-        Yii::$app->session->setFlash($result ? 'success' : 'error', $result ? 'Permission removed successfully' : 'Failed to remove permission from user');
-        return $this->redirect(['user/index']);
-    }
 }

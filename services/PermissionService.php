@@ -10,7 +10,7 @@ use app\models\UserPermission;
 
 class PermissionService
 {
-    public function assignPermissionsToRole(Role $role, array $permissions): bool
+    public function syncPermissionsToRole(Role $role, array $permissions): bool
     {
         $permissions = array_unique($permissions);
 
@@ -51,22 +51,8 @@ class PermissionService
         return true;
     }
 
-    public function removePermissionFromRole(Role $role, string $permission): bool
-    {
-        if (!PermissionRegistry::exists($permission)) {
-            return false;
-        }
-        $rolePermission = RolePermission::find()
-            ->where(['role_id' => $role->id, 'permission' => $permission])
-            ->one();
 
-        if ($rolePermission === null) {
-            return false;
-        }
-        return $rolePermission->delete() !== false;
-    }
-
-    public function assignPermissionsToUser(User $user, array $permissions): bool
+    public function syncPermissionsToUser(User $user, array $permissions): bool
     {
         $permissions = array_unique($permissions);
         foreach ($permissions as $permission) {
@@ -74,9 +60,9 @@ class PermissionService
                 return false;
             }
         }
-        $currentPermissions = RolePermission::find()
+        $currentPermissions = UserPermission::find()
             ->select('permission')
-            ->where(['role_id' => $user->id])
+            ->where(['user_id' => $user->id])
             ->column();
         $permissionsToAdd = array_diff($permissions, $currentPermissions);
         $permissionsToRemove = array_diff($currentPermissions, $permissions);
@@ -105,20 +91,20 @@ class PermissionService
         return true;
     }
 
-
-    public function removePermissionFromUser(User $user, string $permission): bool
+    public function getUserPermissions(int $userId): array
     {
-        if (!PermissionRegistry::exists($permission)) {
-            return false;
-        }
-
-        $userPermission = UserPermission::find()
-            ->where(['user_id' => $user->id, 'permission' => $permission])
-            ->one();
-
-        if ($userPermission === null) {
-            return false;
-        }
-        return $userPermission->delete() !== false;
+        return UserPermission::find()
+            ->select('permission')
+            ->where(['user_id' => $userId])
+            ->column();
     }
+
+    public function getRolePermissions(int $roleId): array
+    {
+        return RolePermission::find()
+            ->select('permission')
+            ->where(['role_id' => $roleId])
+            ->column();
+    }
+
 }
