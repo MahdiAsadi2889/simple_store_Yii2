@@ -6,9 +6,9 @@ use yii\widgets\ActiveForm;
 use app\components\PermissionRegistry;
 
 /** @var yii\web\View $this */
-/** @var app\models\User[] $users */
+/** @var app\models\Role[] $roles */
 
-$this->title = 'Assign Permission To User';
+$this->title = 'Assign Permission To Role';
 
 $permissions = PermissionRegistry::all();
 ?>
@@ -26,23 +26,24 @@ $permissions = PermissionRegistry::all();
         <div class="card-body">
 
             <?php $form = ActiveForm::begin([
-                'action' => ['assign-permission-to-user'],
+                'action' => ['sync-permissions-to-role'],
                 'method' => 'post',
             ]); ?>
 
             <div class="mb-4">
 
                 <label class="form-label fw-bold">
-                    Select User
+                    Select Role
                 </label>
 
                 <?= Html::dropDownList(
-                    'user_id',
-                    null,
-                    ArrayHelper::map($users, 'id', 'username'),
+                    'role_id',
+                    $selectedRoleId,
+                    ArrayHelper::map($roles, 'id', 'name'),
                     [
                         'class' => 'form-select',
-                        'prompt' => 'Choose User'
+                        'prompt' => 'Choose Role',
+                        'onchange' => 'window.location.href="?role_id="+this.value;',
                     ]
                 ) ?>
 
@@ -94,6 +95,7 @@ $permissions = PermissionRegistry::all();
                                     name="permissions[]"
                                     value="<?= Html::encode($permission) ?>"
                                     id="<?= md5($permission) ?>"
+                                    <?= in_array($permission, $currentPermissions) ? 'checked' : '' ?>
                                 >
 
                                 <label
@@ -146,7 +148,8 @@ $('#uncheck-all').click(function () {
     $('.permission-checkbox').prop('checked', false);
 });
 
-JS);
+JS
+);
 
 $this->registerCss(<<<CSS
 
@@ -189,6 +192,7 @@ $this->registerCss(<<<CSS
     user-select:none;
 }
 
-CSS);
+CSS
+);
 
 ?>
