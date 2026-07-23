@@ -2,6 +2,7 @@
 
 namespace app\controllers;
 
+use app\components\PermissionRegistry;
 use app\controllers\BaseController;
 use app\models\Role;
 use app\models\User;
@@ -14,6 +15,36 @@ class PermissionController extends BaseController
     public function __construct($id, $module, private readonly PermissionService $permissionService, $config = [])
     {
         parent::__construct($id, $module, $config);
+    }
+
+    public function actionIndex()
+    {
+        $permissions = [];
+        foreach (PermissionRegistry::all() as $permission) {
+            $permissions[] = [
+                'name' => $permission,
+                'roleCount' => $this->permissionService->getRoleCountByPermissions($permission),
+                'userCount' => $this->permissionService->getUserCountByPermissions($permission),
+            ];
+        }
+
+        return $this->render('index', [
+            'permissions' => $permissions,
+        ]);
+    }
+
+    public function actionView(string $permission)
+    {
+        if (!PermissionRegistry::exists($permission)) {
+            throw new NotFoundHttpException('Permission not found');
+        }
+        $detail = $this->permissionService->getPermissionDetails($permission);
+
+        return $this->render('view', [
+            'permission' => $permission,
+            'roles' => $detail['roles'],
+            'users' => $detail['users'],
+        ]);
     }
 
     public function actionSyncPermissionsToRole()
@@ -39,11 +70,11 @@ class PermissionController extends BaseController
                 'role_id' => $selectedRoleId,
             ]);
         }
-        if($selectedRoleId){
-            $currentPermissions = $this->permissionService->getRolePermissions((int)$selectedRoleId);
+        if ($selectedRoleId) {
+            $currentPermissions = $this->permissionService->getRolePermissions((int) $selectedRoleId);
         }
 
-        return $this->render('sync-role',[
+        return $this->render('sync-role', [
             'roles' => Role::find()->all(),
             'selectedRoleId' => $selectedRoleId,
             'currentPermissions' => $currentPermissions

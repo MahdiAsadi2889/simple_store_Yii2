@@ -7,6 +7,7 @@ use app\models\Role;
 use app\models\RolePermission;
 use app\models\User;
 use app\models\UserPermission;
+use app\models\UserRole;
 
 class PermissionService
 {
@@ -91,6 +92,49 @@ class PermissionService
         return true;
     }
 
+    public function getRolesByPermission(string $permissions): array
+    {
+        return Role::find()
+            ->innerJoin('role_permission', 'role.id = role_permission.role_id')
+            ->where(['role_permission.permission' => $permissions])
+            ->all();
+    }
+
+    public function getUsersByPermission(string $permission): array
+    {
+        $directUsers = User::find()
+            ->innerJoin(
+                'user_permission',
+                'user.id = user_permission.user_id'
+            )
+            ->where([
+                'user_permission.permission' => $permission
+            ])
+            ->all();
+
+        $roleUsers = User::find()
+            ->innerJoin(
+                'user_role',
+                'user.id = user_role.user_id'
+            )
+            ->innerJoin(
+                'role_permission',
+                'user_role.role_id = role_permission.role_id'
+            )
+            ->where([
+                'role_permission.permission' => $permission
+            ])
+            ->all();
+
+        $users = [];
+
+        foreach (array_merge($directUsers, $roleUsers) as $user) {
+            $users[$user->id] = $user;
+        }
+
+        return array_values($users);
+    }
+
     public function getUserPermissions(int $userId): array
     {
         return UserPermission::find()
@@ -105,6 +149,41 @@ class PermissionService
             ->select('permission')
             ->where(['role_id' => $roleId])
             ->column();
+    }
+
+    public function getRoleCountByPermissions(string $permissions): int
+    {
+        return RolePermission::find()
+            ->where(['permission' => $permissions])
+            ->count();
+    }
+
+    public function getUserCountByPermissions(string $permissions): int
+    {
+        $directUsers = UserPermission::find()
+            ->select('user_id')
+            ->where(['permission' => $permissions])
+            ->column();
+
+        $roleUsers = UserRole::find()
+            ->select('user_role.user_id')
+            ->innerJoin(
+                'role_permission',
+                'role_permission.role_id = user_role.role_id'
+            )
+            ->where([
+                'role_permission.permission' => $permissions
+            ])
+            ->column();
+        return count(array_unique(array_merge($directUsers, $roleUsers)));
+    }
+
+    public function getPermissionDetails(string $permission): array
+    {
+        return [
+            'roles' => $this->getRolesByPermission($permission),
+            'users' => $this->getUsersByPermission($permission),
+        ];
     }
 
 }
