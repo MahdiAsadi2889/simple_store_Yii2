@@ -17,6 +17,22 @@ class PermissionController extends BaseController
         parent::__construct($id, $module, $config);
     }
 
+    public function permissions(): array
+    {
+        return [
+
+            'index' => 'permission/view',
+
+            'view' => 'permission/view',
+
+            'sync-permissions-to-role' => 'permission/assign',
+
+            'sync-permissions-to-user' => 'permission/assign',
+
+        ];
+    }
+
+
     public function actionIndex()
     {
         $permissions = [];

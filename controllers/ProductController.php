@@ -40,6 +40,22 @@ class ProductController extends BaseController
         );
     }
 
+    public function permissions(): array
+    {
+        return [
+
+            'index' => 'product/view',
+
+            'view' => 'product/view',
+
+            'create' => 'product/create',
+
+            'update' => 'product/update',
+
+            'delete' => 'product/delete',
+        ];
+    }
+
     /**
      * Lists all Product models.
      *
@@ -47,7 +63,6 @@ class ProductController extends BaseController
      */
     public function actionIndex()
     {
-        $this->checkAccess('product/view');
         $searchModel = new ProductSearch();
         $dataProvider = $searchModel->search($this->request->queryParams);
 
@@ -59,7 +74,6 @@ class ProductController extends BaseController
 
     public function actionView($id)
     {
-        $this->checkAccess('product/view');
         $model = $this->productService->findById($id);
         return $this->render('view', [
             'model' => $model,
@@ -74,7 +88,6 @@ class ProductController extends BaseController
      */
     public function actionCreate()
     {
-        $this->checkAccess('product/create');
         $model = new Product();
 
         if ($this->request->isPost) {
@@ -97,7 +110,6 @@ class ProductController extends BaseController
      */
     public function actionUpdate($id)
     {
-        $this->checkAccess('product/update');
         $model = $this->productService->findById($id);
 
         if ($this->request->isPost) {
@@ -120,7 +132,6 @@ class ProductController extends BaseController
      */
     public function actionDelete($id)
     {
-        $this->checkAccess('product/delete');
         $model = $this->productService->findById($id);
         $this->productService->delete($model);
         return $this->redirect(['index']);
