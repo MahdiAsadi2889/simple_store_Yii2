@@ -5,12 +5,28 @@ namespace app\controllers;
 use app\models\Role;
 use app\models\User;
 use app\services\RoleService;
+use yii\web\NotFoundHttpException;
 
 class RoleController extends BaseController
 {
     public function __construct($id, $module, private readonly RoleService $roleService, $config = [])
     {
         parent::__construct($id, $module, $config);
+    }
+
+    public function permissions(): array
+    {
+        return [
+
+            'index' => 'role/view',
+
+            'view' => 'role/view',
+
+            'create' => 'role/create',
+
+            'update' => 'role/update',
+
+        ];
     }
 
     public function actionIndex()
@@ -22,11 +38,19 @@ class RoleController extends BaseController
         ]);
     }
 
-    public function actionView(int $id)
+    public function actionView($id)
     {
-        $role = $this->roleService->findById($id);
+        $role = Role::findOne($id);
 
-        return $this->render('view', ['role' => $role]);
+        if ($role === null) {
+            throw new NotFoundHttpException('Role not found');
+        }
+
+        return $this->render('view', [
+            'role' => $role,
+            'users' => $this->roleService->getRoleUsers($role),
+            'permissions' => $this->roleService->getRolePermissions($role),
+        ]);
     }
 
     public function actionCreate()
