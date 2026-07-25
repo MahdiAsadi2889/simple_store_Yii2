@@ -24,6 +24,7 @@ return [
 
     //Permission
 
+    'permission/view',
     'permission/assign',
     'permission/remove',
 
