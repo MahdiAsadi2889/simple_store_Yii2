@@ -2,6 +2,7 @@
 
 namespace app\services;
 
+use app\models\RolePermission;
 use app\models\User;
 use app\models\UserRole;
 use Yii;
@@ -47,10 +48,12 @@ class RoleService
 
     public function assignRoleToUser(User $user, Role $role): bool
     {
-        if (UserRole::find()->where([
+        if (
+            UserRole::find()->where([
             'user_id' => $user->id,
             'role_id' => $role->id
-        ])->exists()) {
+            ])->exists()
+        ) {
             return false;
         }
 
@@ -70,6 +73,29 @@ class RoleService
             return false;
         }
         return $userRole->delete() !== false;
+    }
+
+    public function getRoleUsers(Role $role): array
+    {
+        return User::find()
+            ->innerJoin(
+                'user_role',
+                'user.id = user_role.user_id'
+            )
+            ->where([
+                'user_role.role_id' => $role->id
+            ])
+            ->all();
+    }
+
+    public function getRolePermissions(Role $role): array
+    {
+        return RolePermission::find()
+            ->select(['permission'])
+            ->where([
+                'role_id' => $role->id
+            ])
+            ->column();
     }
 
     //    public function deleteRole(int $roleId): bool
