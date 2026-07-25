@@ -34,7 +34,10 @@ $this->params['breadcrumbs'][] = $this->title;
             'title',
             'description:ntext',
             'price',
-            'created_at',
+            [
+                'attribute' => 'created_at',
+                'format' => ['datetime', 'php:Y-m-d'],
+            ],
             //'updated_at',
             [
                 'attribute' => 'status',
