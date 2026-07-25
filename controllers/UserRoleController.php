@@ -19,6 +19,17 @@ class UserRoleController extends BaseController
         parent::__construct($id, $module, $config);
     }
 
+    public function permissions(): array
+    {
+        return [
+
+            'assign-role' => 'role/assign',
+
+            'remove-role' => 'role/remove',
+
+        ];
+    }
+
 
     public function actionAssignRole()
     {
