@@ -20,7 +20,7 @@ $this->title = 'Permissions';
 
             <?= Html::a(
                 'Sync Role Permissions',
-                ['sync-permission-to-role'],
+                ['sync-permissions-to-role'],
                 ['class' => 'btn btn-success btn-sm']
             ) ?>
 
