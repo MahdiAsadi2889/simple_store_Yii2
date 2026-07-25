@@ -7,6 +7,7 @@ use app\services\RbacService;
 use Yii;
 use yii\base\InvalidConfigException;
 use yii\di\NotInstantiableException;
+use yii\filters\AccessControl;
 use yii\web\Controller;
 use yii\web\ForbiddenHttpException;
 use yii\web\UnauthorizedHttpException;
@@ -16,10 +17,43 @@ class BaseController extends Controller
     public function behaviors(): array
     {
         return [
+
             'jwtAuth' => [
                 'class' => JwtAuthBehavior::class
-            ]
+            ],
+
+            'access' => [
+                'class' => AccessControl::class,
+
+                'rules' => [
+                    [
+                        'allow' => true,
+
+                        'matchCallback' => function ($rule, $action) {
+
+                            $permissions = $this->permissions();
+
+                            if (!isset($permissions[$action->id])) {
+                                return true;
+                            }
+
+                            $this->checkAccess(
+                                $permissions[$action->id]
+                            );
+
+                            return true;
+                        },
+                    ],
+                ],
+            ],
+
         ];
+    }
+
+
+    public function permissions(): array
+    {
+        return [];
     }
 
     /**
