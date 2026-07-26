@@ -11,6 +11,7 @@ use app\components\PermissionRegistry;
 $this->title = 'Assign Permission To User';
 
 $permissions = PermissionRegistry::all();
+
 ?>
 
 <div class="container mt-4">
@@ -83,6 +84,13 @@ $permissions = PermissionRegistry::all();
 
                 <?php foreach ($permissions as $permission): ?>
 
+                    <?php
+                    $isDirect = in_array($permission, $directPermissions, true);
+
+                    $isInherited = in_array($permission, $effectivePermissions, true)
+                        && !$isDirect;
+                    ?>
+
                     <div class="col-md-4 mb-3">
 
                         <div class="permission-item">
@@ -90,19 +98,43 @@ $permissions = PermissionRegistry::all();
                             <div class="form-check m-0">
 
                                 <input
-                                    class="form-check-input permission-checkbox"
+                                    class="form-check-input permission-checkbox <?= $isInherited ? 'inherited-checkbox' : '' ?>"
                                     type="checkbox"
-                                    name="permissions[]"
+
+                                    <?php if (!$isInherited): ?>
+                                        name="permissions[]"
+                                    <?php endif; ?>
+
                                     value="<?= Html::encode($permission) ?>"
                                     id="<?= md5($permission) ?>"
-                                    <?= in_array($permission, $currentPermissions) ? 'checked' : '' ?>
+
+                                    <?= ($isDirect || $isInherited) ? 'checked' : '' ?>
+
+                                    <?= $isInherited ? 'disabled' : '' ?>
                                 >
 
                                 <label
                                     class="form-check-label ms-2"
                                     for="<?= md5($permission) ?>"
                                 >
+
                                     <?= Html::encode($permission) ?>
+
+
+                                    <?php if ($isInherited): ?>
+                                        <span class="badge bg-secondary ms-1">
+                            From Role
+                        </span>
+                                    <?php endif; ?>
+
+
+                                    <?php if ($isDirect): ?>
+                                        <span class="badge bg-success ms-1">
+                            Direct
+                        </span>
+                                    <?php endif; ?>
+
+
                                 </label>
 
                             </div>
@@ -139,16 +171,18 @@ $permissions = PermissionRegistry::all();
 <?php
 
 $this->registerJs(<<<JS
-
 $('#check-all').click(function () {
-    $('.permission-checkbox').prop('checked', true);
+    $('.permission-checkbox:not(:disabled)')
+        .prop('checked', true);
 });
+
 
 $('#uncheck-all').click(function () {
-    $('.permission-checkbox').prop('checked', false);
+    $('.permission-checkbox:not(:disabled)')
+        .prop('checked', false);
 });
-
-JS);
+JS
+);
 
 $this->registerCss(<<<CSS
 
@@ -191,6 +225,7 @@ $this->registerCss(<<<CSS
     user-select:none;
 }
 
-CSS);
+CSS
+);
 
 ?>
