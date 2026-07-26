@@ -13,9 +13,17 @@ $this->title = 'Roles';
 
     <h1><?= Html::encode($this->title) ?></h1>
 
-    <p>
-        <?= Html::a('Create Role', ['create'], ['class' => 'btn btn-success']) ?>
-    </p>
+    <?php if (
+        Yii::$container
+            ->get(\app\services\RbacService::class)
+            ->can(Yii::$app->user->id, 'role/create')
+    ): ?>
+
+        <p>
+            <?= Html::a('Create Role', ['create'], ['class' => 'btn btn-success']) ?>
+        </p>
+
+    <?php endif; ?>
 
     <?= GridView::widget([
         'dataProvider' => $dataProvider,
@@ -29,9 +37,25 @@ $this->title = 'Roles';
 
             [
                 'class' => ActionColumn::class,
+
                 'urlCreator' => function ($action, $model) {
                     return [$action, 'id' => $model->id];
                 },
+
+                'visibleButtons' => [
+
+                    'delete' => function ($model, $key, $index) {
+
+                        return Yii::$container
+                            ->get(\app\services\RbacService::class)
+                            ->can(
+                                Yii::$app->user->id,
+                                'role/delete'
+                            );
+
+                    },
+
+                ],
             ],
         ],
     ]); ?>
