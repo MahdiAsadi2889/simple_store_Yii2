@@ -11,6 +11,12 @@ use app\models\UserRole;
 
 class PermissionService
 {
+
+    public function __construct(private readonly RbacCacheService $rbacCacheService, private readonly RoleService $roleService)
+    {
+
+    }
+
     public function syncPermissionsToRole(Role $role, array $permissions): bool
     {
         $permissions = array_unique($permissions);
@@ -49,6 +55,11 @@ class PermissionService
             $rolePermission->save(false);
         }
 
+        $users = $this->roleService->getRoleUsers($role);
+
+        foreach ($users as $user) {
+            $this->rbacCacheService->clearUserPermissions($user->id);
+        }
         return true;
     }
 
@@ -89,6 +100,7 @@ class PermissionService
             $userPermission->save(false);
         }
 
+        $this->rbacCacheService->clearUserPermissions($user->id);
         return true;
     }
 
