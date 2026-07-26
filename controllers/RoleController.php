@@ -2,8 +2,8 @@
 
 namespace app\controllers;
 
+use Yii;
 use app\models\Role;
-use app\models\User;
 use app\services\RoleService;
 use yii\web\NotFoundHttpException;
 
@@ -19,12 +19,10 @@ class RoleController extends BaseController
         return [
 
             'index' => 'role/view',
-
             'view' => 'role/view',
-
             'create' => 'role/create',
-
             'update' => 'role/update',
+            'delete' => 'role/delete',
 
         ];
     }
@@ -86,5 +84,16 @@ class RoleController extends BaseController
         return $this->render('update', [
             'model' => $model,
         ]);
+    }
+
+    public function actionDelete(int $id)
+    {
+        $role = $this->roleService->findById($id);
+
+        $result = $this->roleService->deleteRole($role);
+
+        Yii::$app->session->setFlash($result ? 'success' : 'error', $result ? 'Role Deleted Successfully' : 'Failed to delete role.');
+
+        return $this->redirect(['index']);
     }
 }
