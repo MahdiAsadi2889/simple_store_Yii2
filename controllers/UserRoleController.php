@@ -73,8 +73,6 @@ class UserRoleController extends BaseController
 
     public function actionRemoveRole()
     {
-//        $this->checkAccess('role/remove');
-
         $userId = Yii::$app->request->post('user_id');
         $roleId = Yii::$app->request->post('role_id');
 
