@@ -7,12 +7,13 @@ use app\controllers\BaseController;
 use app\models\Role;
 use app\models\User;
 use app\services\PermissionService;
+use app\services\UserService;
 use Yii;
 use yii\web\NotFoundHttpException;
 
 class PermissionController extends BaseController
 {
-    public function __construct($id, $module, private readonly PermissionService $permissionService, $config = [])
+    public function __construct($id, $module, private readonly PermissionService $permissionService, private readonly UserService $userService, $config = [])
     {
         parent::__construct($id, $module, $config);
     }
@@ -100,7 +101,8 @@ class PermissionController extends BaseController
     public function actionSyncPermissionsToUser()
     {
         $selectedUserId = Yii::$app->request->get('user_id');
-        $currentPermissions = [];
+        $directPermissions = [];
+        $effectivePermissions = [];
 
         if ($this->request->isPost) {
             $selectedUserId = Yii::$app->request->post('user_id');
@@ -123,13 +125,22 @@ class PermissionController extends BaseController
             ]);
         }
         if ($selectedUserId) {
-            $currentPermissions = $this->permissionService->getUserPermissions((int) $selectedUserId);
+
+            $user = $this->userService
+                ->getUserById((int) $selectedUserId);
+
+            $directPermissions = $this->userService
+                ->getUserDirectPermissions($user);
+
+            $effectivePermissions = $this->userService
+                ->getUserEffectivePermissions($user);
         }
 
         return $this->render('sync-user', [
             'users' => User::find()->all(),
             'selectedUserId' => $selectedUserId,
-            'currentPermissions' => $currentPermissions,
+            'directPermissions' => $directPermissions,
+            'effectivePermissions' => $effectivePermissions,
         ]);
     }
 
