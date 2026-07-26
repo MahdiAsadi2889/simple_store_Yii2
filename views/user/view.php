@@ -7,7 +7,10 @@ use yii\helpers\Html;
 /** @var string[] $directPermissions */
 /** @var string[] $effectivePermissions */
 
+$rbac = Yii::$container->get(\app\services\RbacService::class);
 $this->title = 'User Details';
+?>
+
 ?>
 
 <div class="container mt-4">
@@ -78,11 +81,46 @@ $this->title = 'User Details';
 
                                 <?php foreach ($roles as $role): ?>
 
-                                    <span class="badge bg-primary me-1 mb-2">
+                                    <div class="d-flex align-items-center mb-2">
 
-                                        <?= Html::encode($role->name) ?>
+        <span class="badge bg-primary me-2">
+            <?= Html::encode($role->name) ?>
+        </span>
 
-                                    </span>
+
+                                        <?= Html::beginForm(
+                                            ['/user-role/remove-role'],
+                                            'post'
+                                        ) ?>
+
+                                        <?= Html::hiddenInput(
+                                            'user_id',
+                                            $user->id
+                                        ) ?>
+
+                                        <?= Html::hiddenInput(
+                                            'role_id',
+                                            $role->id
+                                        ) ?>
+
+
+
+                                        <?php if ($rbac->can(Yii::$app->user->id, 'role/remove')): ?>
+                                            <?= Html::submitButton(
+                                                'Remove',
+                                                [
+                                                    'class' => 'btn btn-sm btn-outline-danger',
+                                                    'data' => [
+                                                        'confirm' => 'Are you sure you want to remove this role?',
+                                                    ],
+                                                ]
+                                            ) ?>
+
+                                        <?php endif; ?>
+
+                                        <?= Html::endForm() ?>
+
+                                    </div>
 
                                 <?php endforeach; ?>
 
