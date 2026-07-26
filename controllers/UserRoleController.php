@@ -33,7 +33,6 @@ class UserRoleController extends BaseController
 
     public function actionAssignRole()
     {
-//        $this->checkAccess('role/assign');
 
         if ($this->request->isPost) {
 

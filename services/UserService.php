@@ -11,6 +11,11 @@ use yii\web\NotFoundHttpException;
 
 class UserService
 {
+    public function __construct(private readonly RbacCacheService $rbacCacheService)
+    {
+
+    }
+
     public function getDataProvider(): ActiveDataProvider
     {
         return new ActiveDataProvider([
@@ -57,21 +62,28 @@ class UserService
 
     public function getUserEffectivePermissions(User $user): array
     {
-        $permissions = $this->getUserDirectPermissions($user);
+        $permissions = $this->rbacCacheService->getCachedUserPermissions($user->id);
 
+        if ($permissions !== null) {
+            return $permissions;
+        }
+
+        $permissions = $this->getUserDirectPermissions($user);
         $rolePermissions = RolePermission::find()
             ->select('permission')
             ->innerJoin(
                 'user_role',
                 'user_role.role_id = role_permission.role_id'
             )
-            ->where([
-                'user_role.user_id' => $user->id,
-            ])
+            ->where(['user_role.user_id' => $user->id])
             ->column();
 
-        $permissions = array_merge($permissions, $rolePermissions);
+        $permissions = array_values(
+            array_unique(array_merge($permissions, $rolePermissions))
+        );
 
-        return array_unique($permissions);
+        $this->rbacCacheService->cacheUserPermissions($user->id, $permissions);
+
+        return $permissions;
     }
 }
